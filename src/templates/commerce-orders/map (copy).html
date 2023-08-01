@@ -1,0 +1,311 @@
+{% import '_includes/forms' as forms %}
+{% import 'feed-me/_macros' as feedMeMacro %}
+
+
+{% set fields = [{
+    name: 'Title',
+    handle: 'title',
+    required: true,
+    default: {
+        type: 'text',
+    },
+}, {
+    name: 'Slug',
+    handle: 'slug',
+    instructions: 'If not set, the Slug will be automatically created from Title.'|t('feed-me'),
+    default: {
+        type: 'text',
+    },
+}, {
+    type: 'date',
+    name: 'Post Date',
+    handle: 'postDate',
+    instructions: 'Accepts Unix timestamp, or just about any English textual datetime description.'|t('feed-me'),
+    default: {
+        type: 'dateTime',
+    },
+}, {
+    type: 'date',
+    name: 'Expiry Date',
+    handle: 'expiryDate',
+    instructions: 'Accepts Unix timestamp, or just about any English textual datetime description.'|t('feed-me'),
+    default: {
+        type: 'dateTime',
+    }
+}, {
+    name: 'Status',
+    handle: 'enabled',
+    instructions: 'Choose either a default status from the list or the imported field that will contain the status.'|t('feed-me'),
+    default: {
+        type: 'select',
+        options: [
+            { label: 'Don’t import'|t('feed-me'), value: '' },
+            { label: 'Enabled', value: '1' },
+            { label: 'Disabled', value: '0' },
+        ],
+    },
+},
+ {
+    name: 'Unique Id',
+    handle: 'id',
+    instructions: 'If not set, the Slug will be automatically created from Id.'|t('feed-me'),
+    default: {
+        type: 'text',
+    },
+},
+{
+    name: 'Items',
+    handle: 'line-item',
+    instructions: 'Choose the item form the list we will convert this array into fields.'|t('feed-me'),
+    default: {
+        type: 'text',
+    },
+},
+{
+    name: 'Order Total',
+    handle: 'total',
+    instructions: 'Choose the item form the list we will convert this array into fields Order Total.'|t('feed-me'),
+    default: {
+        type: 'text',
+    },
+},
+{
+    name: 'Sub Order Total',
+    handle: 'totalPrice',
+    instructions: 'Choose the item form the list we will convert this array into fields Sub Order Total.'|t('feed-me'),
+    default: {
+        type: 'text',
+    },
+},
+{
+    name: 'Order Shipping Cost',
+    handle: 'totalShippingCost',
+    instructions: 'Choose the item form the list we will convert this array into fields Order Shipping Cost.'|t('feed-me'),
+    default: {
+        type: 'text',
+    },
+},
+{
+    name: 'Order Shipping Plus Tax',
+    handle: 'totalTaxIncluded',
+    instructions: 'Choose the item form the list we will convert this array into fields Order Shipping Plus Tax.'|t('feed-me'),
+    default: {
+        type: 'text',
+    },
+},
+{
+    name: 'Order Tax',
+    handle: 'totalTax',
+    instructions: 'Choose the item form the list we will convert this array into fields  Order Tax.'|t('feed-me'),
+    default: {
+        type: 'text',
+    },
+},
+{
+    name: 'Order Discount',
+    handle: 'totalDiscount',
+    instructions: 'Choose the item form the list we will convert this array into fields Order Discount.'|t('feed-me'),
+    default: {
+        type: 'text',
+    },
+},
+ {
+    name: 'Customer Full Name',
+    handle: 'customer',
+    instructions: 'Choose the item form the list we will convert this array into fields Customer Full Name.'|t('feed-me'),
+    default: {
+        type: 'text',
+    },
+},
+{
+    name: 'Customer Phone',
+    handle: 'number',
+    instructions: 'Choose the item form the list we will convert this array into fields Customer Phone.'|t('feed-me'),
+    default: {
+        type: 'text',
+    },
+}, 
+{
+    name: 'Customer Id',
+    handle: 'customerId',
+    instructions: 'Choose the item form the list we will convert this array into fields Customer Id.'|t('feed-me'),
+    default: {
+        type: 'text',
+    },
+},
+{
+    name: 'Customer Email',
+    handle: 'email',
+    instructions: 'Choose the item form the list we will convert this array into fields Customer Email.'|t('feed-me'),
+    default: {
+        type: 'text',
+    },
+},
+{
+    name: 'Full Billing Address',
+    handle: 'estimatedBillingAddress',
+    instructions: 'Choose the item form the list we will convert this array into fields Full Billing Address.'|t('feed-me'),
+    default: {
+        type: 'text',
+    },
+},
+{
+    name: 'Full Shipping Address',
+    handle: 'estimatedShippingAddress',
+    instructions: 'Choose the item form the list we will convert this array into fields Full Shipping Address.'|t('feed-me'),
+    default: {
+        type: 'text',
+    },
+},
+{
+    name: 'Billing Full Name',
+    handle: 'billingAddress[fullName]',
+    instructions: 'Choose the item form the list we will convert this array into fields Billing First Name.'|t('feed-me'),
+    default: {
+        type: 'text',
+    },
+},
+
+{
+    name: 'Billing Address1',
+    handle: 'billingAddress[addressLine1]',
+    instructions: 'Choose the item form the list we will convert this array into fields Billing Address1.'|t('feed-me'),
+    default: {
+        type: 'text',
+    },
+},
+{
+    name: 'Billing Address2',
+    handle: 'billingAddress[addressLine2]',
+    instructions: 'Choose the item form the list we will convert this array into fields Billing Address2.'|t('feed-me'),
+    default: {
+        type: 'text',
+    },
+}, 
+
+{
+    name: 'Billing City',
+    handle: 'billingAddress[locality]',
+    instructions: 'Choose the item form the list we will convert this array into fields Billing City.'|t('feed-me'),
+    default: {
+        type: 'text',
+    },
+}, 
+{
+    name: 'Billing State',
+    handle: 'billingAddress[administrativeArea]',
+    instructions: 'Choose the item form the list we will convert this array into fields Billing State.'|t('feed-me'),
+    default: {
+        type: 'text',
+    },
+}, 
+{
+    name: 'Billing PostalCode',
+    handle: 'billingAddress[postalCode]',
+    instructions: 'Choose the item form the list we will convert this array into fields Billing PostalCode.'|t('feed-me'),
+    default: {
+        type: 'text',
+    },
+}, 
+{
+    name: 'Billing Country Code',
+    handle: 'billingAddress[countryCode]',
+    instructions: 'Choose the item form the list we will convert this array into fields Billing Country Code.'|t('feed-me'),
+    default: {
+        type: 'text',
+    },
+}, 
+
+{
+    name: 'Shipping Full Name',
+    handle: 'shippingAddress[fullName]',
+    instructions: 'Choose the item form the list we will convert this array into fields Shipping First Name.'|t('feed-me'),
+    default: {
+        type: 'text',
+    },
+},
+
+{
+    name: 'Shipping Address1',
+    handle: 'shippingAddress[addressLine1]',
+    instructions: 'Choose the item form the list we will convert this array into fields Shipping Address1.'|t('feed-me'),
+    default: {
+        type: 'text',
+    },
+},
+{
+    name: 'Shipping Address2',
+    handle: 'shippingAddress[addressLine2]',
+    instructions: 'Choose the item form the list we will convert this array into fields Shipping Address2.'|t('feed-me'),
+    default: {
+        type: 'text',
+    },
+}, 
+
+{
+    name: 'Shipping City',
+    handle: 'shippingAddress[locality]',
+    instructions: 'Choose the item form the list we will convert this array into fields Shipping City.'|t('feed-me'),
+    default: {
+        type: 'text',
+    },
+}, 
+{
+    name: 'Shipping State',
+    handle: 'shippingAddress[administrativeArea]',
+    instructions: 'Choose the item form the list we will convert this array into fields Shipping State.'|t('feed-me'),
+    default: {
+        type: 'text',
+    },
+}, 
+{
+    name: 'Shipping PostalCode',
+    handle: 'shippingAddress[postalCode]',
+    instructions: 'Choose the item form the list we will convert this array into fields Shipping PostalCode.'|t('feed-me'),
+    default: {
+        type: 'text',
+    },
+}, 
+{
+    name: 'Shipping Country Code',
+    handle: 'shippingAddress[countryCode]',
+    instructions: 'Choose the item form the list we will convert this array into fields Shipping Country Code.'|t('feed-me'),
+    default: {
+        type: 'text',
+    },
+}
+ ] %}
+
+
+
+<h2>{{ 'Product Fields'|t('feed-me') }}</h2>
+
+<table class="feedme-mapping data fullwidth collapsible">
+    <thead>
+        <th>{{ 'Field'|t('feed-me') }}</th>
+        <th>{{ 'Feed Element'|t('feed-me') }}</th>
+        <th>{{ 'Default Value'|t('feed-me') }}</th>
+    </thead>
+    <tbody>
+        {% for field in fields %}
+            {% set template = field.type ?? 'default' %}
+            {% set variables = field|merge({ feed: feed, feedData: feedData, attribute: true }) %}
+
+            {% include 'feed-me/_includes/fields/' ~ template ignore missing with variables only %}
+        {% endfor %}
+    </tbody>
+</table>
+
+<hr>
+
+<fieldset class="feedme-uniques" aria-labelledby="node-uniques-label">
+    {% for field in fields %}
+        {% if field and craft.feedme.fieldCanBeUniqueId(field) %}
+            {{ forms.checkboxField({
+                name: 'fieldUnique[' ~ field.handle ~ ']',
+                label: field.name,
+                checked: feed.fieldUnique[field.handle] ?? '',
+            }) }}
+        {% endif %}
+    {% endfor %}
+</fieldset>

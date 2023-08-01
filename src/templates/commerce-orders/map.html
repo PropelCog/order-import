@@ -1,0 +1,623 @@
+{% import '_includes/forms' as forms %}
+{% import 'feed-me/_macros' as feedMeMacro %}
+
+{% set generalfields = [
+        {
+            name: 'Title',
+            handle: 'title',
+            required: true,
+            default: {
+                type: 'text',
+            },
+        },
+        {
+            name: 'Slug',
+            handle: 'slug',
+            required: true,
+            instructions: 'If not set, the Slug will be automatically created from Title.'|t('feed-me'),
+            default: {
+                type: 'text',
+            },
+        },
+        {
+            name: 'Status',
+            handle: 'enabled',
+            instructions: 'Choose either a default status from the list or the imported field that will contain the status.'|t('feed-me'),
+            default: {
+                type: 'select',
+                options: [
+                    { label: 'Enabled', value: '1' },
+                    { label: 'Disabled', value: '0' },
+                ],
+            },
+        },
+        {
+            name: 'Unique Id',
+            handle: 'id',
+            instructions: 'If not set, the Slug will be automatically created from unique Id.'|t('feed-me'),
+            default: {
+                type: 'text',
+            },
+        },
+        {
+            name: 'UID',
+            handle: 'uid',
+            instructions: 'Choose the item form the list we will convert this array into fields UID.'|t('feed-me'),
+            default: {
+                type: 'text',
+            },
+        }
+    ] %}
+    <h2>{{ 'General Fields'|t('feed-me') }}</h2>
+
+    <table class="feedme-mapping data fullwidth collapsible">
+        <thead>
+            <th>{{ 'Field'|t('feed-me') }}</th>
+            <th>{{ 'Feed Element'|t('feed-me') }}</th>
+            <th>{{ 'Default Value'|t('feed-me') }}</th>
+        </thead>
+        <tbody>
+            {% for field in generalfields %}
+                {% set template = field.type ?? 'default' %}
+                {% set variables = field|merge({ feed: feed, feedData: feedData, attribute: true }) %}
+    
+                {% include 'feed-me/_includes/fields/' ~ template ignore missing with variables only %}
+            {% endfor %}
+        </tbody>
+    </table>
+    
+    <hr>    
+{% set Orderfields = [   
+
+{
+    name: 'Customer Id',
+    handle: 'customerId',
+    required: true,
+    instructions: 'Choose the item form the list we will convert this array into fields customer ID.'|t('feed-me'),
+    default: false,
+},
+{
+    name: 'Order Email Address',
+    handle: 'email',
+    required: true,
+    instructions: 'Choose the item form the list we will convert this array into fields order email address.'|t('feed-me'),
+    default: false,
+},
+
+{
+    name: 'Billing Address',
+    handle: 'billingAddressId',
+    required: true,
+    instructions: 'Choose the item form the list we will convert this array into fields full billing address.'|t('feed-me'),
+    default: false,
+},
+{
+    name: 'Shipping Address',
+    handle: 'shippingAddressId',
+    required: true,
+    instructions: 'Choose the item form the list we will convert this array into fields full shipping address.'|t('feed-me'),
+    default: false,
+},
+{
+    name: 'Order Status',
+    handle: 'orderStatusId',
+    required: true,
+    instructions: 'Choose the item form the list we will convert this array into fields order status.'|t('feed-me'),
+    default: {
+        type: 'select',
+        options: [
+            { label: 'New', value: '1' },
+            { label: 'Open', value: '3' },
+        ],
+    },
+},
+{
+    name: 'Number',
+    handle: 'number',
+    required: true,
+    instructions: 'Choose the item form the list we will convert this array into fields number.'|t('feed-me'),
+    default: false,
+},
+{
+    name: 'Reference',
+    handle: 'reference',
+    required: true,
+    instructions: 'Choose the item form the list we will convert this array into fields reference.'|t('feed-me'),
+    default: false,
+},
+{
+    name: 'Is Completed',
+    handle: 'isCompleted',
+    required: true,
+    default: {
+        type: 'select',
+        options: [
+            { label: 'Complete', value: '1' }
+        ],
+    },
+},
+{
+    name: 'Date Ordered',
+    handle: 'dateOrdered',
+    required: true,
+    instructions: 'Choose the item form the list we will convert this array into fields date ordered.'|t('feed-me'),
+    default: {
+        type: 'dateTime',
+    },
+},
+{
+    name: 'Date Authorized',
+    handle: 'dateAuthorized',
+    required: true,
+    instructions: 'Choose the item form the list we will convert this array into fields date authorized.'|t('feed-me'),
+    default: {
+        type: 'dateTime',
+    },
+},
+
+{
+    name: 'Currency',
+    handle: 'currency',
+    instructions: 'Choose the item form the list we will convert this array into fields currency.'|t('feed-me'),
+    default: {
+        type: 'text',
+    },
+},
+{
+    name: 'Payment Currency',
+    handle: 'paymentCurrency',
+    instructions: 'Choose the item form the list we will convert this array into fields payment currency.'|t('feed-me'),
+    default: {
+        type: 'text',
+    },
+},
+{
+    name: 'Order Language',
+    handle: 'orderLanguage',
+    required: true,
+    instructions: 'Choose the item form the list we will convert this array into fields order language.'|t('feed-me'),
+    default: {
+        type: 'text',
+    },
+}
+ ] %}
+<h2>{{ 'Order Fields'|t('feed-me') }}</h2>
+
+<table class="feedme-mapping data fullwidth collapsible">
+    <thead>
+        <th>{{ 'Field'|t('feed-me') }}</th>
+        <th>{{ 'Feed Element'|t('feed-me') }}</th>
+        <th>{{ 'Default Value'|t('feed-me') }}</th>
+    </thead>
+    <tbody>
+        {% for field in Orderfields %}
+            {% set template = field.type ?? 'default' %}
+            {% set variables = field|merge({ feed: feed, feedData: feedData, attribute: true }) %}
+
+            {% include 'feed-me/_includes/fields/' ~ template ignore missing with variables only %}
+        {% endfor %}
+    </tbody>
+</table>
+
+<hr>
+{% set Lineitems = [
+{
+    name: 'Tax Category',
+    handle: 'lineItemstaxCategoryId',
+    required: true,
+    instructions: 'Choose the item form the list we will convert this array into fields Tax Category.'|t('feed-me'),
+    default: {
+        type: 'select',
+        options: [
+            { label: 'General', value: '1' }
+        ],
+    },
+},
+{
+    name: 'Shipping Category',
+    handle: 'lineItemsshippingCategoryId',
+    required: true,
+    instructions: 'Choose the item form the list we will convert this array into fields Shipping Category.'|t('feed-me'),
+    default: {
+        type: 'select',
+        options: [
+            { label: 'General', value: '1' }
+        ],
+    },
+},
+{
+    name: 'Description',
+    handle: 'lineItemsdescription',
+    required: true,
+    instructions: 'Choose the item form the list we will convert this array into fields description.'|t('feed-me'),
+    default: {
+        type: 'text',
+    },
+},
+{
+    name: 'Options',
+    handle: 'lineItemsoptions',
+    instructions: 'Choose the item form the list we will convert this array into fields options.'|t('feed-me'),
+    default: {
+        type: 'text',
+    },
+},
+{
+    name: 'Price',
+    handle: 'lineItemsprice',
+    required: true,
+    instructions: 'Choose the item form the list we will convert this array into fields price.'|t('feed-me'),
+    default: false,
+},
+{
+    name: 'Sale Amount',
+    handle: 'lineItemssaleAmount',
+    required: true,
+    instructions: 'Choose the item form the list we will convert this array into fields saleAmount.'|t('feed-me'),
+    default: false,
+},
+{
+    name: 'Sale Price',
+    handle: 'lineItemssalePrice',
+    instructions: 'Choose the item form the list we will convert this array into fields salePrice.'|t('feed-me'),
+    default: false,
+},
+{
+    name: 'Sku Number',
+    handle: 'lineItemssku',
+    required: true,
+    instructions: 'Choose the item form the list we will convert this array into fields sku.'|t('feed-me'),
+    default: {
+        type: 'text',
+    },
+},
+{
+    name: 'Weight',
+    handle: 'lineItemsweight',
+    instructions: 'Choose the item form the list we will convert this array into fields weight.'|t('feed-me'),
+    default: {
+        type: 'text',
+    },
+},
+{
+    name: 'Height',
+    handle: 'lineItemsheight',
+    instructions: 'Choose the item form the list we will convert this array into fields height.'|t('feed-me'),
+    default: {
+        type: 'text',
+    },
+},{
+    name: 'Length',
+    handle: 'lineItemslength',
+    instructions: 'Choose the item form the list we will convert this array into fields length.'|t('feed-me'),
+    default: {
+        type: 'text',
+    },
+},{
+    name: 'Width',
+    handle: 'lineItemswidth',
+    instructions: 'Choose the item form the list we will convert this array into fields width.'|t('feed-me'),
+    default: {
+        type: 'text',
+    },
+},{
+    name: 'Subtotal',
+    handle: 'lineItemssubtotal',
+    required: true,
+    instructions: 'Choose the item form the list we will convert this array into fields subtotal.'|t('feed-me'),
+    default: false,
+},
+{
+    name: 'Total',
+    handle: 'lineItemstotal',
+    required: true,
+    instructions: 'Choose the item form the list we will convert this array into fields total.'|t('feed-me'),
+    default: false,
+},
+{
+    name: 'Qty',
+    handle: 'lineItemsqty',
+    required: true,
+    instructions: 'Choose the item form the list we will convert this array into fields qty.'|t('feed-me'),
+    default: {
+        type: 'text',
+    },
+},
+{
+    name: 'Note',
+    handle: 'lineItemsnote',
+    instructions: 'Choose the item form the list we will convert this array into fields note.'|t('feed-me'),
+    default: {
+        type: 'text',
+    },
+},
+{
+    name: 'Private Note',
+    handle: 'lineItemsprivateNote',
+    instructions: 'Choose the item form the list we will convert this array into fields privateNote.'|t('feed-me'),
+    default: {
+        type: 'text',
+    },
+},
+ ] %}
+<h2>{{ 'Line Items'|t('feed-me') }}</h2>
+
+<table class="feedme-mapping data fullwidth collapsible">
+    <thead>
+        <th>{{ 'Field'|t('feed-me') }}</th>
+        <th>{{ 'Feed Element'|t('feed-me') }}</th>
+        <th>{{ 'Default Value'|t('feed-me') }}</th>
+    </thead>
+    <tbody>
+        {% for field in Lineitems %}
+            {% set template = field.type ?? 'default' %}
+            {% set variables = field|merge({ feed: feed, feedData: feedData, attribute: true }) %}
+
+            {% include 'feed-me/_includes/fields/' ~ template ignore missing with variables only %}
+        {% endfor %}
+    </tbody>
+</table>
+{% 
+    set paymentItems = [
+{
+    name: 'Payment Error Message',
+    handle: 'orderErrorMessage',
+    required: true,
+    instructions: 'Default Error Message.'|t('feed-me'),
+    default: {
+        type: 'text',
+    },
+},
+{
+    name: 'Transaction ID',
+    handle: 'orderTransactionId',
+    required: true,
+    instructions: 'Default Transaction ID.'|t('feed-me'),
+    default: {
+        type: 'text',
+    },
+},
+{
+    name: 'Card Last Four',
+    handle: 'orderLastFour',
+    required: true,
+    instructions: 'Default Last Four.'|t('feed-me'),
+    default: {
+        type: 'text',
+    },
+},
+
+
+{
+    name: 'Order IP Address',
+    handle: 'lastIp',
+    instructions: 'Default IP Address.'|t('feed-me'),
+    default: {
+        type: 'text',
+    },
+},
+{
+    name: 'Payment Gateway',
+    handle: 'gatewayId',
+    required: true,
+    instructions: 'Choose the item form the list we will convert this array into fields Gateway Id.'|t('feed-me'),
+    default: {
+        type: 'select',
+        options: [
+            { label: 'Dummy', value: 'dummy1' },
+            { label: 'Subscriptions', value: 'subscriptions' },
+            { label: 'Credit Card', value: 'authorizeNet' },
+        ],
+    },
+},
+{
+    name: 'Subscription ID',
+    handle: 'orderSubscriptionId',
+    instructions: 'Default Subscription ID.'|t('feed-me'),
+    default: {
+        type: 'text',
+    },
+},
+{
+    name: 'Vault ID',
+    handle: 'orderVaultId',
+    required: true,
+    instructions: 'Default Vault ID.'|t('feed-me'),
+    default: false,
+},
+]
+%}
+<hr>
+<h2>{{ 'Payment Items'|t('feed-me') }}</h2>
+
+<table class="feedme-mapping data fullwidth collapsible">
+    <thead>
+        <th>{{ 'Field'|t('feed-me') }}</th>
+        <th>{{ 'Feed Element'|t('feed-me') }}</th>
+        <th>{{ 'Default Value'|t('feed-me') }}</th>
+    </thead>
+    <tbody>
+        {% for field in paymentItems %}
+            {% set template = field.type ?? 'default' %}
+            {% set variables = field|merge({ feed: feed, feedData: feedData, attribute: true }) %}
+
+            {% include 'feed-me/_includes/fields/' ~ template ignore missing with variables only %}
+        {% endfor %}
+    </tbody>
+</table>
+
+
+{% 
+    set shippingItems = [
+        {
+            name: 'Shipping Method Name',
+            handle: 'shippingMethodName',
+            instructions: 'Choose the item form the list we will convert this array into fields shipping method name.'|t('feed-me'),
+            default: true,
+        },
+        {
+            name: 'Shipping Amount',
+            handle: 'shippingMethodAmount',
+            instructions: 'Choose the item form the list we will convert this array into fields shipping method amount.'|t('feed-me'),
+            default: true,
+        }
+    ]
+%}
+<hr>
+<h2>{{ 'Order Shipping'|t('feed-me') }}</h2>
+
+<table class="feedme-mapping data fullwidth collapsible">
+    <thead>
+        <th>{{ 'Field'|t('feed-me') }}</th>
+        <th>{{ 'Feed Element'|t('feed-me') }}</th>
+    </thead>
+    <tbody>
+        {% for field in shippingItems %}
+            {% set template = field.type ?? 'default' %}
+            {% set variables = field|merge({ feed: feed, feedData: feedData, attribute: true }) %}
+
+            {% include 'feed-me/_includes/fields/' ~ template ignore missing with variables only %}
+        {% endfor %}
+    </tbody>
+</table>
+
+{% 
+    set taxItems = [
+        {
+            name: 'Tax Method Name',
+            handle: 'taxMethodName',
+            instructions: 'Choose the item form the list we will convert this array into fields tax method name.'|t('feed-me'),
+            default: true,
+        },
+        {
+            name: 'Tax Amount',
+            handle: 'totalTax',
+            instructions: 'Choose the item form the list we will convert this array into fields tax method amount.'|t('feed-me'),
+            default: true,
+        }
+    ]
+%}
+<hr>
+<h2>{{ 'Order Tax'|t('feed-me') }}</h2>
+
+<table class="feedme-mapping data fullwidth collapsible">
+    <thead>
+        <th>{{ 'Field'|t('feed-me') }}</th>
+        <th>{{ 'Feed Element'|t('feed-me') }}</th>
+    </thead>
+    <tbody>
+        {% for field in taxItems %}
+            {% set template = field.type ?? 'default' %}
+            {% set variables = field|merge({ feed: feed, feedData: feedData, attribute: true }) %}
+
+            {% include 'feed-me/_includes/fields/' ~ template ignore missing with variables only %}
+        {% endfor %}
+    </tbody>
+</table>
+
+{% 
+    set couponItems = [
+        {
+            name: 'Coupon Code',
+            handle: 'couponCode',
+            instructions: 'Choose the item form the list we will convert this array into fields coupon code.'|t('feed-me'),
+            default: true,
+        },
+        {
+            name: 'Discount Amount',
+            handle: 'totalDiscount',
+            instructions: 'Choose the item form the list we will convert this array into fields coupon discount.'|t('feed-me'),
+            default: true,
+        }
+    ]
+%}
+<hr>
+<h2>{{ 'Coupon Fields'|t('feed-me') }}</h2>
+
+<table class="feedme-mapping data fullwidth collapsible">
+    <thead>
+        <th>{{ 'Field'|t('feed-me') }}</th>
+        <th>{{ 'Feed Element'|t('feed-me') }}</th>
+    </thead>
+    <tbody>
+        {% for field in couponItems %}
+            {% set template = field.type ?? 'default' %}
+            {% set variables = field|merge({ feed: feed, feedData: feedData, attribute: true }) %}
+
+            {% include 'feed-me/_includes/fields/' ~ template ignore missing with variables only %}
+        {% endfor %}
+    </tbody>
+</table>
+
+{% if feed.elementGroup %}
+    {% set orderLayoutId = feed.elementGroup[feed.elementType] %}
+  {#  {% set orderType = craft.commerce.productTypes.getProductTypeById(productTypeId) %} #}
+{% endif %}
+
+
+
+{# 
+
+{% set orderTabs = [] %}
+{% set orderTabs = craft.app.fields.getLayoutById( orderLayoutId ).getTabs() %}
+
+{% set Customfields = [] %}
+{% for tab in orderTabs %}
+{% dd tab.getElements() %}
+    {% for layoutField in tab.getElements() %}
+    {% set Customfields = Customfields | merge([{ label: layoutField.displayName, value: className(nodeType) }]) %}
+    {% endfor %}
+{% endfor %}
+
+#}
+{% if orderLayoutId %}
+{%  set orderfields = craft.app.fields.getFieldsByGroupId( orderLayoutId ) %}
+
+
+{% set Customfields = [] %}
+
+<hr>
+{#  {% for field in orderfields %}
+{% set fieldClass = craft.feedme.fields.getRegisteredField(className(field)) %}
+{% set template = fieldClass.getMappingTemplate() %}
+
+
+{% set variables = { name: field.name, handle: field.handle, feed: feed, feedData: feedData, field: field, fieldClass: fieldClass } %}
+{% include template ignore missing with variables only %}
+  
+{% endfor %}
+
+#}
+<h2>{{ 'Custom Fields'|t('feed-me') }}</h2>
+
+<table class="feedme-mapping data fullwidth collapsible">
+    <thead>
+        <th>{{ 'Field'|t('feed-me') }}</th>
+        <th>{{ 'Feed Element'|t('feed-me') }}</th>
+    </thead>
+    <tbody>
+        {% for field in orderfields %}
+            {% set fieldClass = craft.feedme.fields.getRegisteredField(className(field)) %}
+            {% set template = fieldClass.getMappingTemplate() %}
+            
+            
+            {% set variables = { name: field.name, handle: field.handle, feed: feed, feedData: feedData, field: field, fieldClass: fieldClass } %}
+            {% include template ignore missing with variables only %}
+        {% endfor %}
+    </tbody>
+</table>
+{% endif %}
+<hr>
+
+<fieldset class="feedme-uniques" aria-labelledby="node-uniques-label">
+    {% for field in generalfields %}
+        {% if field and craft.feedme.fieldCanBeUniqueId(field) %}
+            {{ forms.checkboxField({
+                name: 'fieldUnique[' ~ field.handle ~ ']',
+                label: field.name,
+                checked: feed.fieldUnique[field.handle] ?? '',
+            }) }}
+        {% endif %}
+    {% endfor %}
+</fieldset>
+
