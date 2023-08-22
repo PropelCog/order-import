@@ -55,12 +55,12 @@ class Plugin extends BasePlugin
             // ...
         });
          Event::on(Elements::class, Elements::EVENT_REGISTER_FEED_ME_ELEMENTS, function(RegisterFeedMeElementsEvent $e) {
-             
-            
+
+
             $e->elements[] = CommerceOrderElement::class;
         });
 
-       
+
         $this->setComponents([
             'import' => \propelcog\craftorderimport\services\ImportFields::class,
         ]);
@@ -70,7 +70,7 @@ class Plugin extends BasePlugin
             CraftVariable::EVENT_INIT,
             function (Event $event) {
                 $event->sender->set('craftimport', ImportFieldsVariable::class);
-                
+
             }
         );
 
@@ -95,9 +95,9 @@ class Plugin extends BasePlugin
 
         Event::on(Process::class, Process::EVENT_STEP_BEFORE_PARSE_CONTENT, function(FeedProcessEvent $event) {
             $lineItemFields = array(
-                'lineItemstaxCategoryId',  
-                'lineItemsshippingCategoryId', 
-                'lineItemsdescription', 
+                'lineItemstaxCategoryId',
+                'lineItemsshippingCategoryId',
+                'lineItemsdescription',
                 'lineItemsoptions',
                 'lineItemsprice',
                 'lineItemssaleAmount',
@@ -114,10 +114,14 @@ class Plugin extends BasePlugin
                 'lineItemsprivateNote'
             );
             $lineItems = array();
-        
+
             $fieldMapping = $event->feed['fieldMapping'];
-            $totalItem = $event->feedData['Order_total_tems'];
-          
+            if(!isset( $event->feedData['order_total_items'] ))
+            {
+                return $event;
+            }
+            $totalItem = $event->feedData['order_total_items'];
+
             foreach($lineItemFields as $fieldHandle)
             {
                 if(isset( $fieldMapping[$fieldHandle] ))
@@ -132,7 +136,7 @@ class Plugin extends BasePlugin
                     {
                         $val = DataHelper::fetchSimpleValue($event->feedData, $fieldInfo);
                     }
-                    
+
                     $lineItems[$i][$fieldHandle] = $val;
                 }
                     //   print_r( $attributeValue );
@@ -140,7 +144,7 @@ class Plugin extends BasePlugin
                     //  echo "\n";
                 }
             }
-            
+
            // echo "<pre>";
           //  print_r( $lineItems );
           //  die;
@@ -148,9 +152,9 @@ class Plugin extends BasePlugin
           //  echo "<pre> sss";
           //  print_r( $event->feedData );
           return $event;
-          
+
         });
-        
+
     }
 
     protected function createSettingsModel(): ?Model

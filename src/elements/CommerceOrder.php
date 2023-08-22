@@ -1138,7 +1138,7 @@ class CommerceOrder extends Element
         }
         parent::init();
     }
-    
+
     public function behaviors(): array
     {
         $behaviors = parent::behaviors();
@@ -1155,7 +1155,7 @@ class CommerceOrder extends Element
 
     public function setAttributes($values, $safeOnly = true): void
     {
-       
+
 
         parent::setAttributes($values, $safeOnly);
     }
@@ -1860,7 +1860,7 @@ class CommerceOrder extends Element
                             'attribute' => 'lineItems',
                         ],
                     ]);
-                 
+
                    // $this->addNotice($notice);
                    // $this->removeLineItem($item);
                     $lineItemRemoved = true;
@@ -1893,7 +1893,7 @@ class CommerceOrder extends Element
             }
         }*/
 
-        /*if ($this->getRecalculationMode() == self::RECALCULATION_MODE_ALL) {        
+        /*if ($this->getRecalculationMode() == self::RECALCULATION_MODE_ALL) {
             $availableMethodOptions = $this->getAvailableShippingMethodOptions();
             if ($this->shippingMethodHandle && !isset($availableMethodOptions[$this->shippingMethodHandle])) {
                 $this->shippingMethodHandle = ArrayHelper::firstKey($availableMethodOptions);
@@ -1960,7 +1960,7 @@ class CommerceOrder extends Element
     }
     public function adjustment(array $adjustment): void
     {
-       
+
         $orderRecord = OrderRecord::findOne($this->id);
         $record = new OrderAdjustmentRecord();
         $record->name = $adjustment['name'];
@@ -1981,7 +1981,7 @@ class CommerceOrder extends Element
 
         $fldData = $this->getBehavior('customFields');
         $mfields = $this->getDirtyFields();
-        
+
         if( !empty( $mfields ) && !empty( $order ))
         {
             foreach( $mfields as $key => $val)
@@ -1996,7 +1996,7 @@ class CommerceOrder extends Element
               $order->setFieldValue( $val, $fldData->$val ) ;
             }
             Craft::$app->getElements()->saveElement($order, false);
-           
+
         }
         return true;
     }
@@ -2005,13 +2005,17 @@ class CommerceOrder extends Element
     {
        // echo"<pre>";print_r($this->lineItems);die;
         ####################line items records #######################
+        if(empty( $this->lineItems ))
+        {
+            return true;
+        }
         foreach($this->lineItems as $key => $item)
         {
             $newElementID = $this->elementCounter()+1 ;
             $includeAuditColumns = false;
             $uide = StringHelper::UUID();
             $results = \Craft::$app->db->createCommand()->insert('elements', ['id'=>$newElementID,'fieldLayoutId' => 15,'type' => 'craft\commerce\elements\Variant','enabled' => 1,'uid'=>$uide],$includeAuditColumns)->execute();
-            $lastElementInserID = \Craft::$app->db->getLastInsertID(); 
+            $lastElementInserID = \Craft::$app->db->getLastInsertID();
 
             $uuid = StringHelper::UUID();
             $desc = filter_var($item['lineItemsdescription'], FILTER_SANITIZE_STRING);
@@ -2047,20 +2051,20 @@ class CommerceOrder extends Element
             ],$includeAuditColumns)->execute();
         }
 
-        
 
-        
+
+
         ####################line items records end #######################
 
         return true;
     }
-    
+
     /**
      * @inheritdoc
      */
     public function afterSave(bool $isNew): void
     {
-        
+
         //echo $this->gatewayId; die;
         $shippingAddress = AddressElement::find()->ownerId($this->getCustomerId())->id($this->shippingAddressId)->one();
         $billingAddress = AddressElement::find()->ownerId($this->getCustomerId())->id($this->billingAddressId)->one();
@@ -2114,7 +2118,7 @@ class CommerceOrder extends Element
         $orderRecord->sourceBillingAddressId = $this->sourceBillingAddressId;
         $orderRecord->sourceBillingAddressId = $this->sourceBillingAddressId;
         $orderRecord->recalculationMode = static::RECALCULATION_MODE_NONE;
-     
+
 
         // We want to always have the same date as the element table, based on the logic for updating these in the element service i.e resaving
         $orderRecord->dateUpdated = $this->dateUpdated;
@@ -2130,9 +2134,9 @@ class CommerceOrder extends Element
             $orderRecord->shippingAddressId = null;
             $this->setShippingAddress(null);
         }
-        
 
-       
+
+
 
         if ($billingAddress ) {
             $billingAddress->ownerId = $this->id; // Always ensure the address is owned by the order
@@ -2146,7 +2150,7 @@ class CommerceOrder extends Element
         }
 
 
-       
+
         if( $this->totalDiscount && $this->couponCode ){
             $record = new DiscountRecord();
             $record->name = $this->couponCode;
@@ -2173,17 +2177,17 @@ class CommerceOrder extends Element
                 $aditemID ='';
                 if( $lineItems ){ $aditemID =$lineItems[0]->id; }
                 $couponCodeAdjustment = [
-                     'name' => $this->couponCode,  
-                     'type'=>'discount', 
-                     'description' => $this->couponCode, 
+                     'name' => $this->couponCode,
+                     'type'=>'discount',
+                     'description' => $this->couponCode,
                      'amount' => -$this->totalDiscount,
-                     'isEstimated'=>1, 
-                     'lineItemId'=>$aditemID, 
+                     'isEstimated'=>1,
+                     'lineItemId'=>$aditemID,
                      'orderId'=>$this->id
                 ];
-                $this->adjustment($couponCodeAdjustment); 
-                
-                $orderRecord->totalDiscount = $this->totalDiscount;   
+                $this->adjustment($couponCodeAdjustment);
+
+                $orderRecord->totalDiscount = $this->totalDiscount;
             }
         }
 
@@ -2198,17 +2202,17 @@ class CommerceOrder extends Element
                 $liteMethod->enabled = true;
                 $liteMethod->save(false);
             }
-            
+
             $shippingAdjustment = [
-                'name' => $this->shippingMethodName,  
-                'type'=>'shipping', 
-                'description' => $this->shippingMethodName, 
+                'name' => $this->shippingMethodName,
+                'type'=>'shipping',
+                'description' => $this->shippingMethodName,
                 'amount' => $this->shippingMethodAmount,
-                'isEstimated'=>1, 
-                'lineItemId'=>'', 
+                'isEstimated'=>1,
+                'lineItemId'=>'',
                 'orderId'=>$this->id
            ];
-           $this->adjustment($shippingAdjustment); 
+           $this->adjustment($shippingAdjustment);
             $orderRecord->totalShippingCost = $this->shippingMethodAmount;
         }
 
@@ -2222,17 +2226,17 @@ class CommerceOrder extends Element
                 $liteMethod->default = 1;
                 $liteMethod->save(false);
             }
-            
+
             $shippingAdjustment = [
-                'name' => $this->taxMethodName,  
-                'type'=>'tax', 
-                'description' => $this->taxMethodName, 
+                'name' => $this->taxMethodName,
+                'type'=>'tax',
+                'description' => $this->taxMethodName,
                 'amount' => $this->totalTax,
-                'isEstimated'=>1, 
-                'lineItemId'=>'', 
+                'isEstimated'=>1,
+                'lineItemId'=>'',
                 'orderId'=>$this->id
            ];
-           $this->adjustment($shippingAdjustment); 
+           $this->adjustment($shippingAdjustment);
            $orderRecord->totalTax = $this->totalTax;
         }
 
@@ -2261,9 +2265,9 @@ class CommerceOrder extends Element
           $transaction->userId = $customerID;
           $transaction->hash = $orderTransactionId;
           $transaction->type =  TransactionRecord::TYPE_PURCHASE;
-         
 
-          $success = $transaction->save(false);    
+
+          $success = $transaction->save(false);
 
           $paymentSourceRecord = new PaymentSourceRecord();
           $paymentSourceRecord->customerId = $customerID;
@@ -2272,9 +2276,9 @@ class CommerceOrder extends Element
           $paymentSourceRecord->token = $orderVaultId;
           $paymentSourceRecord->description = $orderLastFour;
           $paymentSourceRecord->response = '';
-          $success = $paymentSourceRecord->save(false);  
+          $success = $paymentSourceRecord->save(false);
           $orderRecord->paymentSourceId =  $paymentSourceRecord->id;
-          $orderRecord->paidStatus = 'paid';  
+          $orderRecord->paidStatus = 'paid';
         }
 
         $orderRecord->total = $this->getTotal();
@@ -2287,11 +2291,11 @@ class CommerceOrder extends Element
         // $orderRecord->totalTax = $this->getTotalTax();
          //$orderRecord->totalTaxIncluded = $this->getTotalTaxIncluded();
          $orderRecord->totalQty = $this->getTotalQty();
-         $orderRecord->paidStatus = 'paid';  
-         $orderRecord->datePaid =  DateTimeHelper::toDateTime('now');  
+         $orderRecord->paidStatus = 'paid';
+         $orderRecord->datePaid =  DateTimeHelper::toDateTime('now');
 
-        
-      
+
+
 
         $orderRecord->save(false);
         /*
@@ -2302,12 +2306,12 @@ class CommerceOrder extends Element
         echo $this->getOutstandingBalance();
         print_r(  $this->getPaidStatus());
         */
-        
+
         $order = Commerce::getInstance()->getOrders()->getOrderById($orderRecord->id);
 
         $fldData = $this->getBehavior('customFields');
         $mfields = $this->getDirtyFields();
-        
+
         if( !empty( $mfields ) && !empty( $order ))
         {
             foreach( $mfields as $key => $val)
@@ -2321,20 +2325,20 @@ class CommerceOrder extends Element
               // $order->$val =  $fldData->$val;
               $order->setFieldValue( $val, $fldData->$val ) ;
             }
- 
-            Craft::$app->getElements()->saveElement($order, false);
-           
-        }
-        
-        
 
-       
+            Craft::$app->getElements()->saveElement($order, false);
+
+        }
+
+
+
+
        // $this->_saveAdjustments();
        // $this->_saveLineItems();
         $this->_saveNotices();
         $this->_saveOrderHistory($oldStatusId, $orderRecord->orderStatusId);
         $this->_deleteOrphanedOrderAddresses();
-        
+
         parent::afterSave($isNew);
     }
     public function elementCounter(){
@@ -2561,9 +2565,9 @@ class CommerceOrder extends Element
         $addressElement->setAttributes($address);
         $addressElement->ownerId = $customerID;
         $address = $addressElement;
-        
+
         Craft::$app->getElements()->saveElement($addressElement, false);
-       
+
         $includeAuditColumns = false;
         $results = \Craft::$app->db->createCommand()->update('commerce_orders', [
             'billingAddressId' => $addressElement->id
@@ -2590,7 +2594,7 @@ class CommerceOrder extends Element
         $users = \craft\elements\User::find()->id($customerID)->one();
         Plugin::getInstance()->getCustomers()->savePrimaryShippingAddressId($users, $addressElement->id);
         return $address->id;
-        
+
     }
 
 
@@ -2655,8 +2659,6 @@ class CommerceOrder extends Element
      */
     public function getPaidStatus(): string
     {
-        echo $this->getIsPaid();
-        echo "aaa \n";
         if ($this->getIsPaid() && $this->getTotalPrice() > 0 && $this->getTotalPaid() > $this->getTotalPrice()) {
             return self::PAID_STATUS_OVERPAID;
         }
@@ -2902,7 +2904,7 @@ class CommerceOrder extends Element
      */
     public function getLineItems(): array
     {
-        
+
         if (!isset($this->_lineItems)) {
             $lineItems = $this->id ? Plugin::getInstance()->getLineItems()->getAllLineItemsByOrderId($this->id) : [];
             /*foreach ($lineItems as $lineItem) {
@@ -2919,7 +2921,7 @@ class CommerceOrder extends Element
     public function setLineItems(array $lineItems): void
     {
         $this->_lineItems = [];
-        
+
       //  $order = Order::find()->id($this->id)->one();
 
         foreach ($lineItems as $lineItem) {
@@ -2940,7 +2942,7 @@ class CommerceOrder extends Element
 
     public function CustomSetLineItems(array $lineItems): void
     {
-        
+
     }
 
 

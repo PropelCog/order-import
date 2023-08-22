@@ -16,7 +16,7 @@ class ImportFieldsVariable
     protected $allowAnonymous = true;
 
         public function getOrderFields(){
-       
+
         $query = (new Query())
             ->select([
                 'productTypes.descriptionFormat',

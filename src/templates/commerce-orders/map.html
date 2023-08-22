@@ -32,8 +32,9 @@
             },
         },
         {
-            name: 'Unique Id',
+            name: 'Order ID',
             handle: 'id',
+            required: true,
             instructions: 'If not set, the Slug will be automatically created from unique Id.'|t('feed-me'),
             default: {
                 type: 'text',
@@ -610,7 +611,8 @@
 <hr>
 
 <fieldset class="feedme-uniques" aria-labelledby="node-uniques-label">
-    {% for field in generalfields %}
+    
+    {% for field in Orderfields %}
         {% if field and craft.feedme.fieldCanBeUniqueId(field) %}
             {{ forms.checkboxField({
                 name: 'fieldUnique[' ~ field.handle ~ ']',

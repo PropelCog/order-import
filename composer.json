@@ -2,7 +2,7 @@
     "name": "propelcog/craft-order-import",
     "description": "Plugin to extend feedme to import orders",
     "type": "craft-plugin",
-    "version": "4.3.7",
+    "version": "4.3.8",
     "support": {
         "email": "staff@propelcog.com"
     },

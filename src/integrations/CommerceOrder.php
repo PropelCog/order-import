@@ -70,14 +70,14 @@ class CommerceOrder extends Element
     public $myPublicVariable  = 0;
 
     public $myPublicVariableArray  = [];
-    
+
     /**
      * @var string
      */
     public static string $class = CommerceOrderElement::class;
 
 
-    
+
 
     // Templates
     // =========================================================================
@@ -95,7 +95,7 @@ class CommerceOrder extends Element
      */
     public function getColumnTemplate(): string
     {
-        
+
         return 'order-import/commerce-orders/column';
     }
 
@@ -106,20 +106,17 @@ class CommerceOrder extends Element
     {
         return 'order-import/commerce-orders/map';
     }
-
+    /**
+     * @Store Element Value
+     */
     public function updatePublicVariable($newValue) {
         $this->myPublicVariable = $newValue;
-    }    
+    }
 
     public function updatePublicVariableArray( $params = [] ) {
         $eID = $this->elementID();
         $this->myPublicVariableArray[] = $params;
-        /*
-        echo "<pre>";
-        print_r( $this->myPublicVariableArray );
-        */
-
-    }  
+    }
     // Public Methods
     // =========================================================================
 
@@ -147,12 +144,12 @@ class CommerceOrder extends Element
 
     public function getOrderFields(){
        return  $results = $this->_createProductTypeQuery()->all();
-      
+
     }
 
     private function _createProductTypeQuery(): Query
     {
-          
+
         $query = (new Query())
             ->select([
                 '*',
@@ -196,40 +193,22 @@ class CommerceOrder extends Element
     }
 
     /**
-     * @inheritDoc
+     * @Get Latest Element Value
      */
-    /*
-    public function save($element, $settings): bool
-    {
-        $this->beforeSave($element, $settings);
-
-        if (!Craft::$app->getElements()->saveElement($this->element, true, true, Hash::get($this->feed, 'updateSearchIndexes'))) {
-            $errors = [$this->element->getErrors()];
-
-            if ($this->element->getErrors()) {
-                foreach ($this->element->getVariants() as $variant) {
-                    if ($variant->getErrors()) {
-                        $errors[] = $variant->getErrors();
-                    }
-                }
-
-                throw new Exception(Json::encode($errors));
-            }
-
-            return false;
-        }
-
-        return true;
-    }
-    */
     public function elementCounter(){
         $elements = (new Query())->select(['*'])->from(['elements'])->limit(1)->orderBy('id desc')->one();
         return $elements['id'];
     }
+    /**
+     * @Get Element Value By ID
+     */
     public function elementID(){
         $elements = (new Query())->select(['*'])->from(['elements'])->limit(1)->orderBy('id desc')->one();
         return $elements['id'];
     }
+    /**
+     * @Get Element Value By ID
+     */
     public function FindelementCounter( $eid ){
         $elements = (new Query())->select(['*'])->from(['content'])->where(['elementId' => $eid])->one();
         if( $elements ){
@@ -238,6 +217,9 @@ class CommerceOrder extends Element
             return false;
         }
     }
+    /**
+     * @Find Customer Value By ID
+     */
     public function find_commerce_customers( $cid ){
         $elements = (new Query())->select(['*'])->from(['commerce_customers'])->where(['customerId' => $cid])->one();
         if( $elements ){
@@ -246,62 +228,42 @@ class CommerceOrder extends Element
             return false;
         }
     }
-  
+
+    /**
+     * @Generate Order ID By Mapping Field
+     */
     protected function parseId($feedData, $fieldInfo): DateTime|bool|array|Carbon|string|null
     {
-        
-        $newElementID = $this->elementCounter()+1 ;
-        $includeAuditColumns = false;
-        \Craft::$app->db->createCommand()->insert('elements', ['id'=>$newElementID,'fieldLayoutId' => 1,'type' => 'craft\commerce\elements\Order','enabled' => 1,'uid'=>$this->UUID()],$includeAuditColumns)->execute();
-        //\Craft::$app->db->createCommand()->insert('commerce_orders', ['id'=>$newElementID,'orderLanguage'=>'en'],$includeAuditColumns)->execute();
-        $this->element->random_order_id($newElementID);
         $value = $this->fetchSimpleValue($feedData, $fieldInfo);
+        $refrenceNumber =  substr( MD5( $value ), 0, 7);
+        $commerce_orders = (new Query())->select(['id'])->from(['commerce_orders'])->where(['reference'=>$refrenceNumber])->one();
+        if( $commerce_orders ){
+            $newElementID = $commerce_orders['id'] ;
+        }else{
+            $newElementID = $this->elementCounter()+1 ;
+            $includeAuditColumns = false;
+            \Craft::$app->db->createCommand()->insert('elements', ['id'=>$newElementID,'fieldLayoutId' => 1,'type' => 'craft\commerce\elements\Order','enabled' => 1,'uid'=>$this->UUID()],$includeAuditColumns)->execute();
+            $this->element->random_order_id($newElementID);
+        }
         $this->updatePublicVariable($newElementID);
-
-
-       
-       
-
         return $newElementID;
     }
-    
+    /**
+     * @Generate Customer ID By Mapping Field
+     */
     protected function parseCustomerId($feedData, $fieldInfo): DateTime|bool|array|Carbon|string|null
     {
-        
-        $value = $this->fetchSimpleValue($feedData, $fieldInfo); 
+
+        $value = $this->fetchSimpleValue($feedData, $fieldInfo);
         $this->element = new CommerceOrderElement();
-        $values =  $this->element->getCustomCustomerID($value,$feedData['Customer_Full_Name']);
+        $values =  $this->element->getCustomCustomerID($value,$feedData['order_customer_full_name']);
         return $values;
     }
-    /*
-    public function UUID()
-    {
-        return StringHelper::UUID();
-    }
 
-     public static function UUID()
-	{
-		return sprintf('%04x%04x-%04x-%04x-%04x-%04x%04x%04x',
+    /**
+     * @Random Generate UID For Order
+     */
 
-			// 32 bits for "time_low"
-			mt_rand(0, 0xffff), mt_rand(0, 0xffff),
-
-			// 16 bits for "time_mid"
-			mt_rand(0, 0xffff),
-
-			// 16 bits for "time_hi_and_version", four most significant bits holds version number 4
-			mt_rand(0, 0x0fff) | 0x4000,
-
-			// 16 bits, 8 bits for "clk_seq_hi_res", 8 bits for "clk_seq_low", two most significant bits holds zero and
-			// one for variant DCE1.1
-			mt_rand(0, 0x3fff) | 0x8000,
-
-			// 48 bits for "node"
-			mt_rand(0, 0xffff), mt_rand(0, 0xffff), mt_rand(0, 0xffff)
-		);
-	}
-    */
-   
     public  function UUID()
 	{
 		return sprintf('%04x%04x-%04x-%04x-%04x-%04x%04x%04x',
@@ -326,27 +288,41 @@ class CommerceOrder extends Element
 
     protected function parseUid($feedData, $fieldInfo): DateTime|bool|array|Carbon|string|null
     {
-         $value = $this->fetchSimpleValue($feedData, $fieldInfo); 
+         $value = $this->fetchSimpleValue($feedData, $fieldInfo);
          $values =  $this->UUID();
          return $values;
     }
+
+    /**
+     * @Generate Order Number By Mapping Field
+     */
+
     protected function parseNumber($feedData, $fieldInfo): DateTime|bool|array|Carbon|string|null
     {
-         $value = $this->elementID(); 
+         $value = $this->fetchSimpleValue($feedData, $fieldInfo);
          $values =  MD5( $value );
          return $values;
     }
+
+    /**
+     * @Generate Reference Number By Mapping Field
+     */
+
     protected function parseReference($feedData, $fieldInfo): DateTime|bool|array|Carbon|string|null
     {
-         $value = $this->elementID(); 
+         $value = $this->fetchSimpleValue($feedData, $fieldInfo);
          $values =  substr( MD5( $value ), 0, 7);
          return $values;
     }
-    
+
+    /**
+     * @Save Custom Field Value By Mapping Field
+     */
+
     protected function parseCustomField1($feedData, $fieldInfo): DateTime|bool|array|Carbon|string|null
-    { 
-        
-        
+    {
+
+
         $elementID = $this->myPublicVariable;
         $value = $this->fetchSimpleValue($feedData, $fieldInfo);
         $FindelementCounter = $this->FindelementCounter( $elementID );
@@ -366,328 +342,157 @@ class CommerceOrder extends Element
         }
         return $value;
     }
-    /*
-    protected function parseCustomField2($feedData, $fieldInfo): DateTime|bool|array|Carbon|string|null
-    { 
-        $elementID = $this->myPublicVariable;
-        $value = $this->fetchSimpleValue($feedData, $fieldInfo);
-        $FindelementCounter = $this->FindelementCounter( $elementID );
-        if( $FindelementCounter ){
-            $includeAuditColumns = false;
-            $results = \Craft::$app->db->createCommand()->update('content', [
-                'field_customField2_amfyxsjv' => $value
-            ],'elementId ='.$elementID)->execute();
-        }else{
-            $includeAuditColumns = false;
-            $results = \Craft::$app->db->createCommand()->insert('content', [
-                'elementId' => $elementID,
-                'siteId' => 1,
-                'field_customField2_amfyxsjv' => $value,
-                'uid'=>$this->UUID()
-            ],$includeAuditColumns)->execute();
-        }
-        return $value;
-    }
-    protected function parseCustomField3($feedData, $fieldInfo): DateTime|bool|array|Carbon|string|null
-    { 
-        $elementID = $this->myPublicVariable;
-        $value = $this->fetchSimpleValue($feedData, $fieldInfo);
-        $FindelementCounter = $this->FindelementCounter( $elementID );
-        if( $FindelementCounter ){
-            $includeAuditColumns = false;
-            $results = \Craft::$app->db->createCommand()->update('content', [
-                'field_customField3_wnmbdqkw' => $value
-            ],'elementId ='.$elementID)->execute();
-        }else{
-            $includeAuditColumns = false;
-            $results = \Craft::$app->db->createCommand()->insert('content', [
-                'elementId' => $elementID,
-                'siteId' => 1,
-                'field_customField3_wnmbdqkw' => $value,
-                'uid'=>$this->UUID()
-            ],$includeAuditColumns)->execute();
-        }
-        return $value;
-    }
-    protected function parseCustomField4($feedData, $fieldInfo): DateTime|bool|array|Carbon|string|null
-    { 
-        $elementID = $this->myPublicVariable;
-        $value = $this->fetchSimpleValue($feedData, $fieldInfo);
-        $FindelementCounter = $this->FindelementCounter( $elementID );
-        if( $FindelementCounter ){
-            $includeAuditColumns = false;
-            $results = \Craft::$app->db->createCommand()->update('content', [
-                'field_customField4_hoyetofw' => $value
-            ],'elementId ='.$elementID)->execute();
-        }else{
-            $includeAuditColumns = false;
-            $results = \Craft::$app->db->createCommand()->insert('content', [
-                'elementId' => $elementID,
-                'siteId' => 1,
-                'field_customField4_hoyetofw' => $value,
-                'uid'=>$this->UUID()
-            ],$includeAuditColumns)->execute();
-        }
-        return $value;
-    }
-    protected function parseCustomField5($feedData, $fieldInfo): DateTime|bool|array|Carbon|string|null
-    { 
-        $elementID = $this->myPublicVariable;
-        $value = $this->fetchSimpleValue($feedData, $fieldInfo);
-        $FindelementCounter = $this->FindelementCounter( $elementID );
-        if( $FindelementCounter ){
-            $includeAuditColumns = false;
-            $results = \Craft::$app->db->createCommand()->update('content', [
-                'field_customField5_tzahvdna' => $value
-            ],'elementId ='.$elementID)->execute();
-        }else{
-            $includeAuditColumns = false;
-            $results = \Craft::$app->db->createCommand()->insert('content', [
-                'elementId' => $elementID,
-                'siteId' => 1,
-                'field_customField5_tzahvdna' => $value,
-                'uid'=>$this->UUID()
-            ],$includeAuditColumns)->execute();
-        }
-        return $value;
-    }
-    protected function parseCustomField6($feedData, $fieldInfo): DateTime|bool|array|Carbon|string|null
-    { 
-        $elementID = $this->myPublicVariable;
-        $value = $this->fetchSimpleValue($feedData, $fieldInfo);
-        $FindelementCounter = $this->FindelementCounter( $elementID );
-        if( $FindelementCounter ){
-            $includeAuditColumns = false;
-            $results = \Craft::$app->db->createCommand()->update('content', [
-                'field_customField6_hwosloai' => $value
-            ],'elementId ='.$elementID)->execute();
-        }else{
-            $includeAuditColumns = false;
-            $results = \Craft::$app->db->createCommand()->insert('content', [
-                'elementId' => $elementID,
-                'siteId' => 1,
-                'field_customField6_hwosloai' => $value,
-                'uid'=>$this->UUID()
-            ],$includeAuditColumns)->execute();
-        }
-        return $value;
-    }
-    protected function parseCustomField7($feedData, $fieldInfo): DateTime|bool|array|Carbon|string|null
-    { 
-        $elementID = $this->myPublicVariable;
-        $value = $this->fetchSimpleValue($feedData, $fieldInfo);
-        $FindelementCounter = $this->FindelementCounter( $elementID );
-        if( $FindelementCounter ){
-            $includeAuditColumns = false;
-            $results = \Craft::$app->db->createCommand()->update('content', [
-                'field_customField7_vqioyvms' => $value
-            ],'elementId ='.$elementID)->execute();
-        }else{
-            $includeAuditColumns = false;
-            $results = \Craft::$app->db->createCommand()->insert('content', [
-                'elementId' => $elementID,
-                'siteId' => 1,
-                'field_customField7_vqioyvms' => $value,
-                'uid'=>$this->UUID()
-            ],$includeAuditColumns)->execute();
-        }
-        return $value;
-    }
-    protected function parseCustomField8($feedData, $fieldInfo): DateTime|bool|array|Carbon|string|null
-    { 
-        $elementID = $this->myPublicVariable;
-        $value = $this->fetchSimpleValue($feedData, $fieldInfo);
-        $FindelementCounter = $this->FindelementCounter( $elementID );
-        if( $FindelementCounter ){
-            $includeAuditColumns = false;
-            $results = \Craft::$app->db->createCommand()->update('content', [
-                'field_customField8_cztviudc' => $value
-            ],'elementId ='.$elementID)->execute();
-        }else{
-            $includeAuditColumns = false;
-            $results = \Craft::$app->db->createCommand()->insert('content', [
-                'elementId' => $elementID,
-                'siteId' => 1,
-                'field_customField8_cztviudc' => $value,
-                'uid'=>$this->UUID()
-            ],$includeAuditColumns)->execute();
-        }
-        return $value;
-    }
-    protected function parseCustomField9($feedData, $fieldInfo): DateTime|bool|array|Carbon|string|null
-    { 
-        $elementID = $this->myPublicVariable;
-        $value = $this->fetchSimpleValue($feedData, $fieldInfo);
-        $FindelementCounter = $this->FindelementCounter( $elementID );
-        if( $FindelementCounter ){
-            $includeAuditColumns = false;
-            $results = \Craft::$app->db->createCommand()->update('content', [
-                'field_customField9_xcsjeqii' => $value
-            ],'elementId ='.$elementID)->execute();
-        }else{
-            $includeAuditColumns = false;
-            $results = \Craft::$app->db->createCommand()->insert('content', [
-                'elementId' => $elementID,
-                'siteId' => 1,
-                'field_customField9_xcsjeqii' => $value,
-                'uid'=>$this->UUID()
-            ],$includeAuditColumns)->execute();
-        }
-        return $value;
-    }
-    protected function parseCustomField10($feedData, $fieldInfo): DateTime|bool|array|Carbon|string|null
-    { 
-        $elementID = $this->myPublicVariable;
-        $value = $this->fetchSimpleValue($feedData, $fieldInfo);
-        $FindelementCounter = $this->FindelementCounter( $elementID );
-        if( $FindelementCounter ){
-            $includeAuditColumns = false;
-            $results = \Craft::$app->db->createCommand()->update('content', [
-                'field_customField10_hkmgkgri' => $value
-            ],'elementId ='.$elementID)->execute();
-        }else{
-            $includeAuditColumns = false;
-            $results = \Craft::$app->db->createCommand()->insert('content', [
-                'elementId' => $elementID,
-                'siteId' => 1,
-                'field_customField10_hkmgkgri' => $value,
-                'uid'=>$this->UUID()
-            ],$includeAuditColumns)->execute();
-        }
-        return $value;
-    }
-    protected function parseCustomField11($feedData, $fieldInfo): DateTime|bool|array|Carbon|string|null
-    { 
-        $elementID = $this->myPublicVariable;
-        $value = $this->fetchSimpleValue($feedData, $fieldInfo);
-        $FindelementCounter = $this->FindelementCounter( $elementID );
-        if( $FindelementCounter ){
-            $includeAuditColumns = false;
-            $results = \Craft::$app->db->createCommand()->update('content', [
-                'field_customField11_wzuddsml' => $value
-            ],'elementId ='.$elementID)->execute();
-        }else{
-            $includeAuditColumns = false;
-            $results = \Craft::$app->db->createCommand()->insert('content', [
-                'elementId' => $elementID,
-                'siteId' => 1,
-                'field_customField11_wzuddsml' => $value,
-                'uid'=>$this->UUID()
-            ],$includeAuditColumns)->execute();
-        }
-        return $value;
-    }
-    protected function parseCustomField12($feedData, $fieldInfo): DateTime|bool|array|Carbon|string|null
-    { 
-        $elementID = $this->myPublicVariable;
-        $value = $this->fetchSimpleValue($feedData, $fieldInfo);
-        $FindelementCounter = $this->FindelementCounter( $elementID );
-        if( $FindelementCounter ){
-            $includeAuditColumns = false;
-            $results = \Craft::$app->db->createCommand()->update('content', [
-                'field_customField12_zlcwoznv' => $value
-            ],'elementId ='.$elementID)->execute();
-        }else{
-            $includeAuditColumns = false;
-            $results = \Craft::$app->db->createCommand()->insert('content', [
-                'elementId' => $elementID,
-                'siteId' => 1,
-                'field_customField12_zlcwoznv' => $value,
-                'uid'=>$this->UUID()
-            ],$includeAuditColumns)->execute();
-        }
-        return $value;
-    }
-    */
+
+     /**
+     * @Get Latest Address Field Value
+     */
+
     public function addressID(){
         $addresses = (new Query())->select(['*'])->from(['addresses'])->limit(1)->orderBy('id desc')->one();
         return $addresses['id'];
     }
+
+     /**
+     * @Generate Billing Address ID By Mapping Field
+     */
+
     protected function parseBillingAddressId($feedData, $fieldInfo): DateTime|bool|array|Carbon|string|null
     {
 
 
         $elementID = $this->myPublicVariable;
-        $value = $this->fetchSimpleValue($feedData, $fieldInfo); 
+        $value = $this->fetchSimpleValue($feedData, $fieldInfo);
                 $address = [
-                'countryCode' => $feedData['Billing_Country_Code'],
-                'addressLine1' => $feedData['Billing_Address'],
-                'addressLine2' => $feedData['Billing_Address_2'],
-                'administrativeArea' => $feedData['Billing_State'],
-                'locality' => $feedData['Billing_City'],
-                'postalCode' => $feedData['Billing_Zip'],
-                'firstName' => $feedData['Billing_First_Name'],
-                'lastName' => $feedData['Billing_Last_Name'],
-                'fullName' => $feedData['Billing_First_Name'].' '.$feedData['Billing_Last_Name']
+                'countryCode' => $feedData['order_country_code'],
+                'addressLine1' => $feedData['order_billing_address'],
+                'addressLine2' => $feedData['order_billing_address2'],
+                'administrativeArea' => $feedData['order_billing_state'],
+                'locality' => $feedData['order_billing_city'],
+                'postalCode' => $feedData['order_billing_zip'],
+                'firstName' => $feedData['order_billing_first_name'],
+                'lastName' => $feedData['order_shipping_last_name'],
+                'fullName' => $feedData['order_billing_first_name'].' '.$feedData['order_shipping_last_name']
                 ];
-        $customerID = $this->element->getCustomCustomerID($feedData['Customer_Email'],$feedData['Customer_Full_Name']);
+        $customerID = $this->element->getCustomCustomerID($feedData['order_customer_email'],$feedData['order_customer_full_name']);
         $billingID = $this->element->getCustomSetBillingAddress($address,$customerID,$elementID);
         return $billingID;
     }
+
+    /**
+     * @Generate Shipping Address ID By Mapping Field
+     */
+
     protected function parseShippingAddressId($feedData, $fieldInfo): DateTime|bool|array|Carbon|string|null
     {
-        
+
         $elementID = $this->myPublicVariable;
-        $value = $this->fetchSimpleValue($feedData, $fieldInfo); 
+        $value = $this->fetchSimpleValue($feedData, $fieldInfo);
                 $address = [
                     'countryCode' => $feedData['Shipping_Country_Code'],
-                    'addressLine1' => $feedData['Shipping_Address'],
-                    'addressLine2' => $feedData['Shipping_Address_2'],
-                    'administrativeArea' => $feedData['Shipping_State'],
-                    'locality' => $feedData['Shipping_City'],
-                    'postalCode' => $feedData['Shipping_Zip'],
-                    'firstName' => $feedData['Shipping_First_Name'],
-                    'lastName' => $feedData['Shipping_Last_Name'],
-                    'fullName' => $feedData['Shipping_First_Name'].' '.$feedData['Shipping_Last_Name']
+                    'addressLine1' => $feedData['order_shipping_address'],
+                    'addressLine2' => $feedData['order_shipping_address2'],
+                    'administrativeArea' => $feedData['order_shipping_state'],
+                    'locality' => $feedData['order_shipping_city'],
+                    'postalCode' => $feedData['order_shipping_zip'],
+                    'firstName' => $feedData['order_shipping_first_name'],
+                    'lastName' => $feedData['order_shipping_last_name'],
+                    'fullName' => $feedData['order_shipping_first_name'].' '.$feedData['order_shipping_last_name']
                 ];
-        $customerID = $this->element->getCustomCustomerID($feedData['Customer_Email'],$feedData['Customer_Full_Name']);
+        $customerID = $this->element->getCustomCustomerID($feedData['order_customer_email'],$feedData['order_customer_full_name']);
         $billingID = $this->element->getCustomSetShippingAddress($address,$customerID,$elementID);
         return $billingID;
     }
+
+    /**
+     * @Generate Order Card Digits By Mapping Field
+     */
+
     protected function parseOrderLastFour($feedData, $fieldInfo): DateTime|bool|array|Carbon|string|null
     {
-        
-        $value = $this->fetchSimpleValue($feedData, $fieldInfo); 
+
+        $value = $this->fetchSimpleValue($feedData, $fieldInfo);
         return $value;
     }
+
+
+    /**
+     * @Generate Order Transaction ID By Mapping Field
+     */
+
     protected function parseOrderTransactionId($feedData, $fieldInfo): DateTime|bool|array|Carbon|string|null
     {
-        
-        $value = $this->fetchSimpleValue($feedData, $fieldInfo); 
+
+        $value = $this->fetchSimpleValue($feedData, $fieldInfo);
         return $value;
     }
+
+
+    /**
+     * @Generate Order Total Discount By Mapping Field
+     */
+
     protected function parseTotalDiscount($feedData, $fieldInfo): DateTime|bool|array|Carbon|string|null
     {
-        
-        $value = $this->fetchSimpleValue($feedData, $fieldInfo); 
+
+        $value = $this->fetchSimpleValue($feedData, $fieldInfo);
         return $value;
     }
+
+     /**
+     * @Generate Order Vault By Mapping Field
+     */
+
     protected function parseOrderVaultId($feedData, $fieldInfo): DateTime|bool|array|Carbon|string|null
     {
-        $value = $this->fetchSimpleValue($feedData, $fieldInfo); 
+        $value = $this->fetchSimpleValue($feedData, $fieldInfo);
         return $value;
     }
-   
+
+   /**
+     * @Generate Order Payment IP By Mapping Field
+     */
+
+
     protected function parseLastIp($feedData, $fieldInfo): DateTime|bool|array|Carbon|string|null
     {
-        $value = $this->fetchSimpleValue($feedData, $fieldInfo); 
+        $value = $this->fetchSimpleValue($feedData, $fieldInfo);
         return $value;
     }
+
+    /**
+     * @Generate Order Payment IP By Mapping Field
+     */
+
     protected function parseShippingMethodAmount($feedData, $fieldInfo): DateTime|bool|array|Carbon|string|null
     {
-        $value = $this->fetchSimpleValue($feedData, $fieldInfo); 
+        $value = $this->fetchSimpleValue($feedData, $fieldInfo);
         return $value;
     }
+
+    /**
+     * @Generate Order Tax Method By Mapping Field
+     */
+
     protected function parseTaxMethodName($feedData, $fieldInfo): DateTime|bool|array|Carbon|string|null
     {
-        $value = $this->fetchSimpleValue($feedData, $fieldInfo); 
+        $value = $this->fetchSimpleValue($feedData, $fieldInfo);
         return $value;
     }
+
+    /**
+     * @Generate Order Total Tax Amount By Mapping Field
+     */
+
     protected function parseTotalTax($feedData, $fieldInfo): DateTime|bool|array|Carbon|string|null
     {
-        $value = $this->fetchSimpleValue($feedData, $fieldInfo); 
+        $value = $this->fetchSimpleValue($feedData, $fieldInfo);
         return $value;
     }
+
+    /**
+     * @Generate Order Date By Mapping Field
+     */
+
     protected function parseDateOrdered($feedData, $fieldInfo): DateTime|bool|array|Carbon|string|null
     {
         $value = $this->fetchSimpleValue($feedData, $fieldInfo);
@@ -705,6 +510,12 @@ class CommerceOrder extends Element
                }
          }
     }
+
+    /**
+     * @Generate Date Authorized By Mapping Field
+     */
+
+
     protected function parseDateAuthorized($feedData, $fieldInfo): DateTime|bool|array|Carbon|string|null
     {
         $value = $this->fetchSimpleValue($feedData, $fieldInfo);
@@ -722,10 +533,15 @@ class CommerceOrder extends Element
                }
          }
     }
+
+    /**
+     * @Generate Order Payment Date By Mapping Field
+     */
+
     protected function parseDatePaid($feedData, $fieldInfo): DateTime|bool|array|Carbon|string|null
     {
         $value = $this->fetchSimpleValue($feedData, $fieldInfo);
-        
+
          if( $fieldInfo ){
              $node = $fieldInfo['node'];
                if( $node == 'usedefault' ){
@@ -740,10 +556,15 @@ class CommerceOrder extends Element
                }
          }
     }
+
+    /**
+     * @Generate Order Gateway ID By Mapping Field
+     */
+
     protected function parseGatewayId($feedData, $fieldInfo): DateTime|bool|array|Carbon|string|null
     {
-        
-         $value = $this->fetchSimpleValue($feedData, $fieldInfo); 
+
+         $value = $this->fetchSimpleValue($feedData, $fieldInfo);
          $gaetway = Commerce::getInstance()->getGateways()->getGatewayByHandle($value);
          if( isset($gaetway->id) ){
              return $gaetway->id;

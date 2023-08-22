@@ -41,7 +41,7 @@ class ImportFields extends Component
 {
     // Public Methods
     // =========================================================================
-   
+
     /**
      * This function can literally be anything you want, and you can have as many service
      * functions as you want
@@ -57,7 +57,7 @@ class ImportFields extends Component
      {
          return $this->_navs()->firstWhere('id', $id);
      }
-     
+
     public function exampleService()
     {
         $result = 'something';
