@@ -35,7 +35,7 @@
             name: 'Order ID',
             handle: 'id',
             required: true,
-            instructions: 'If not set, the Slug will be automatically created from unique Id.'|t('feed-me'),
+            instructions: 'Choose the entry id from the list we will convert as a Order ID.'|t('feed-me'),
             default: {
                 type: 'text',
             },
@@ -43,7 +43,8 @@
         {
             name: 'UID',
             handle: 'uid',
-            instructions: 'Choose the item form the list we will convert this array into fields UID.'|t('feed-me'),
+            required: true,
+            instructions: 'Choose the entry id form the list we will convert this array into fields UID.'|t('feed-me'),
             default: {
                 type: 'text',
             },
@@ -116,14 +117,14 @@
     name: 'Number',
     handle: 'number',
     required: true,
-    instructions: 'Choose the item form the list we will convert this array into fields number.'|t('feed-me'),
+    instructions: 'Choose the entry id form the list we will convert this array into fields number.'|t('feed-me'),
     default: false,
 },
 {
     name: 'Reference',
     handle: 'reference',
     required: true,
-    instructions: 'Choose the item form the list we will convert this array into fields reference.'|t('feed-me'),
+    instructions: 'Choose the entry id form the list we will convert this array into fields reference.'|t('feed-me'),
     default: false,
 },
 {
